@@ -83,7 +83,7 @@ jobs:
           keys: [backend-build]
       - run:
           command: |
-            cd backenend
+            cd backend
             npm install
             npm audit --audit-level=critical
 workflows:
