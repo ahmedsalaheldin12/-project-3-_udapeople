@@ -72,10 +72,11 @@ jobs:
       - restore_cache:
           keys: [frontend-build]
       - run:
-        command: |
+          command: |
             cd frontend
             npm install
-            npm audit fix --audit-level=critical 
+            npm run audit
+           # npm audit fix --audit-level=critical 
       - slack/notify:
           channel: CircleCi
           event: fail
