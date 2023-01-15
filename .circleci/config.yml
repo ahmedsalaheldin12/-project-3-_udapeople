@@ -78,7 +78,7 @@ jobs:
             npm run audit
            # npm audit fix --audit-level=critical 
       - slack/notify:
-          channel: CircleCi
+          channel: df
           event: fail
           template: basic_fail_1
 
@@ -95,7 +95,7 @@ jobs:
             npm install
             npm audit fix --audit-level=critical
       - slack/notify:
-          channel: CircleCi
+          channel: df
           event: fail
           template: basic_fail_1
 workflows:
