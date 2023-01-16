@@ -192,7 +192,8 @@ jobs:
       - destroy-environment
 
   run-migrations:
-    executor: node
+    docker:
+      - image: cimg/node:19.3.0
     steps:
       - checkout
       - restore_cache:
