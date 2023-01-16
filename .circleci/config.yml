@@ -2,6 +2,12 @@ version: 2.1
 orbs:   
   slack: circleci/slack@4.12.0
 
+  destroy-environment: #step for create destroy-environment
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      Workflow_ID:
+        type: string
+        default: ${CIRCLE_WORKFLOW_ID:0:7}
 
 jobs:
   build-frontend:
@@ -75,8 +81,7 @@ jobs:
           command: |
             cd frontend
             npm install
-            npm run audit
-           # npm audit fix --audit-level=critical 
+            npm audit fix --audit-level=critical 
       - slack/notify:
           channel: df
           event: fail
@@ -98,6 +103,49 @@ jobs:
           channel: df
           event: fail
           template: basic_fail_1
+
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - chechout
+      - run:
+          name: Install tar utility
+          command: |
+            yum install -y tar gzip
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+           aws cloudformation deploy \
+            --template-file .circleci/files/backend.yml \
+            --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+            --tags project=udapeople
+
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+           aws cloudformation deploy \
+            --template-file .circleci/files/frontend.yml \
+            --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+            --tags project=udapeople
+      - run:
+          name: Add Backend Ip to Ansible inventory
+          command: |
+            BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text)
+            echo $BACKEND_PUBLIC_IP >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - destroy-environment
+      
+      
 workflows:
   default:
     jobs:
@@ -113,4 +161,9 @@ workflows:
       - scan-frontend:
             requires: [test-frontend]
             context: slack-secrets
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [master]
      
