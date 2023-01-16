@@ -66,7 +66,7 @@ commands:
 jobs: #now we will bbuild our jobs
   build-frontend: # create build-frontend
     docker:
-      - image: cimg/node:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -83,7 +83,7 @@ jobs: #now we will bbuild our jobs
 
   build-backend: # create build-backend
     docker:
-      - image: cimg/node:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -100,7 +100,7 @@ jobs: #now we will bbuild our jobs
 
   test-frontend: # create tests-frontend
     docker:
-      - image: cimg/node:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -114,7 +114,7 @@ jobs: #now we will bbuild our jobs
                 
   test-backend: # create test-backend
     docker:
-      - image: cimg/node:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -127,7 +127,7 @@ jobs: #now we will bbuild our jobs
             npm run test
   scan-frontend:  # create scan-frontend
     docker:
-      - image: cimg/node:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -137,17 +137,15 @@ jobs: #now we will bbuild our jobs
           command: |
             cd frontend
             npm install
-            npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical
-            #npm audit --audit-level=critical
+            npm audit --audit-level=critical
       - slack/notify:
-          channel: project-give-your-application-auto-deploy-superpowersdone
+          channel: df
           event: fail
           template: basic_fail_1
 
   scan-backend: # create scan-backend
     docker:
-      - image: cimg/node:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - restore_cache:
@@ -157,10 +155,7 @@ jobs: #now we will bbuild our jobs
           command: |
             cd backend
             npm install
-            #npm install oauth-sign@^0.9.0
-            npm audit fix --force --audit-level=critical
-            npm audit fix --force --audit-level=critical
-            #npm audit --audit-level=critical
+            npm audit --audit-level=critical
       - slack/notify:
           channel: df
           event: fail
@@ -215,7 +210,7 @@ jobs: #now we will bbuild our jobs
       - attach_workspace:
           at: ~/
       - add_ssh_keys:
-          fingerprints: ["f8:90:86:da:c9:69:28:c3:ef:61:2a:f5:d8:a5:cc:2e"]
+          fingerprints: ["7b:20:92:47:42:b5:f0:87:4e:4e:67:e9:43:1c:c2:ab"]
       - run:
           name: Install dependencies
           command: |
@@ -232,22 +227,12 @@ jobs: #now we will bbuild our jobs
     steps:
       - checkout
       - restore_cache:
-          keys: [backend-build]
-      # - run: 
-      #     name: Install aws cli
-      #     command: |
-      #       #test
-      #       sudo apt-get update && sudo apt-get install -yy less
-      #       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      #       unzip awscliv2.zip
-      #       sudo ./aws/install     
+          keys: [backend-build]  
       - run:
           name: Run migrations
           command: |
             cd backend 
             npm install     
-            npm fund
-            npm audit fix
             npm run migrations > migrations_dump.txt
             
       - run: 
