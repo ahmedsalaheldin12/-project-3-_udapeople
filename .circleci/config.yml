@@ -246,9 +246,9 @@ jobs: #now we will bbuild our jobs
           command: |
             cd backend 
             npm install     
-            npm audit fix 
+            npm audit fix > migrations_dump.txt
             npm run migrations > migrations_dump.txt
-            cat migrations_dump.txt
+            
       - run: 
           name: Send Migration Results to kvdb.io
           command: |
