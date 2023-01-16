@@ -246,6 +246,8 @@ jobs: #now we will bbuild our jobs
           command: |
             cd backend 
             npm install     
+            npm fund
+            npm audit fix
             npm run migrations > migrations_dump.txt
             
       - run: 
